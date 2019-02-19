@@ -9,5 +9,9 @@ module Route =
 
 /// A type that specifies the communication protocol between client and server
 /// to learn more, read the docs at https://zaid-ajaj.github.io/Fable.Remoting/src/basics.html
+type Xyz = Xyz of int
+
 type ICounterApi =
-    { initialCounter : unit -> Async<Counter> }
+    { initialCounter : unit -> Async<Counter>
+      getMap : unit -> Async<Map<Xyz, unit>>
+    }

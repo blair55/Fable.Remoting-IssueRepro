@@ -23,7 +23,12 @@ let getInitCounter () : Task<Counter> = task { return { Value = 42 } }
 
 let counterApi = {
     initialCounter = getInitCounter >> Async.AwaitTask
-}
+    getMap = fun () -> async {
+        return [
+            Xyz 1, ()
+        ] |> Map.ofList
+    }
+  }
 
 let webApp =
     Remoting.createApi()

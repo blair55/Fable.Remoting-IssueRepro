@@ -26,6 +26,8 @@ type Model = { Counter: Counter option }
 type Msg =
 | Increment
 | Decrement
+| GetMap
+| GotMap of Result<Map<Xyz, unit>, exn>
 | InitialCountLoaded of Result<Counter, exn>
 
 module Server =
@@ -65,6 +67,20 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
     | Some counter, Decrement ->
         let nextModel = { currentModel with Counter = Some { Value = counter.Value - 1 } }
         nextModel, Cmd.none
+
+    | _, GetMap ->
+        let cmd =
+            Cmd.ofAsync
+                Server.api.getMap
+                ()
+                (Ok >> GotMap)
+                (fun a -> printfn "************ %A" a; Increment)
+        currentModel, cmd
+
+    | _, GotMap (Ok m) ->
+        printfn "%A" m
+        currentModel, Cmd.none
+
     | _, InitialCountLoaded (Ok initialCount)->
         let nextModel = { Counter = Some initialCount }
         nextModel, Cmd.none
@@ -115,6 +131,7 @@ let view (model : Model) (dispatch : Msg -> unit) =
                     [ Heading.h3 [] [ str ("Press buttons to manipulate counter: " + show model) ] ]
                 Columns.columns []
                     [ Column.column [] [ button "-" (fun _ -> dispatch Decrement) ]
+                      Column.column [] [ button "get map" (fun _ -> dispatch GetMap) ]
                       Column.column [] [ button "+" (fun _ -> dispatch Increment) ] ] ]
 
           Footer.footer [ ]
